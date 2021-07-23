@@ -23,3 +23,4 @@ Download and install [this prebuilt RISC-V toolchain](https://github.com/stnolti
 - https://wiki.osdev.org/HiFive-1_Bare_Bones
 - https://matrix89.github.io/writes/writes/experiments-in-riscv/
 - [default.lds](https://github.com/michaeljclark/riscv-probe/blob/master/env/qemu-sifive_u/default.lds)
+- [RISC-V spec v2.2](https://riscv.org/wp-content/uploads/2017/05/riscv-spec-v2.2.pdf) (2017-05)
