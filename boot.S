@@ -1,6 +1,7 @@
 #define IP x23
 #define PSP x24
 .equ STACK_SIZE, 1024
+.equ UART_BASE, 0x10000000
 
 .global _start
 
@@ -12,6 +13,13 @@
 .macro pop dr
 	lw \dr, -4(PSP)
 	addi PSP, PSP, -4
+.endm
+
+.macro loadipword dr
+	# load from instruction stream
+	lw \dr, 0(IP)
+	# bump the instruction pointer
+	add IP, IP, 4
 .endm
 
 _start:
@@ -38,10 +46,7 @@ PARK:
     j PARK
 
 NEXT:
-	# load from instruction stream
-	lw t0, 0(IP)
-	# bump the instruction pointer
-	add IP, IP, 4
+	loadipword t0
 	# jump to the next 'forth' instruction
 	jr t0
 
@@ -52,20 +57,46 @@ PRINT:
 	jal print          # lowercase C version
 	j NEXT
 
-FOUR:
-	li t0, 4       # store the thing
-	push t0
-	j NEXT         # special thing here!
-
 PLUS:
 	pop t1
 	pop t2
-	add t1, t1, t2
+	add t1, t2, t1
 	push t1
 	j NEXT
 
+MINUS:
+	pop t1
+	pop t2
+	sub t1, t2, t1
+	push t1
+	j NEXT
+
+DOLIT:
+	# consume next word in the instruction stream and push it onto the stack
+	loadipword t0
+	push t0
+	j NEXT
+
+
+KEY:
+    li t0, UART_BASE
+    lb t1, 5(t0)
+    andi t1, t1, 0x1
+    beqz t1, KEY
+    lb t1, 0(t0)
+    push t1
+    j NEXT
+
+BRANCH:
+	loadipword t0
+	add IP, IP, t0
+	j NEXT
+
 program:
-    .word FOUR, FOUR, FOUR, PLUS, PLUS, PRINT, PARK
+	.word DOLIT, 5, DOLIT, 1, MINUS, PRINT
+	.word DOLIT, 1971, DOLIT, 1987, PLUS, PRINT
+	.word KEY, PRINT, BRANCH, -16
+	.word PARK
 
 stacks:
     .skip STACK_SIZE * 4            # allocate 1024 * 4 space for the harts stacks
