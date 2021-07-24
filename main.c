@@ -20,3 +20,20 @@ void enter() {
     puts("Hello RISC-V");
 }
 
+
+void print(int i, int base)
+{
+    char buf[32];  // reverse order
+    char *p = buf;
+    do {
+        *p++ = "0123456789ABCDEF"[i%base];
+        i /= base;
+    } while (i != 0);
+
+    do {
+        putchar(*--p);
+    } while (p != buf);
+
+    putchar(' ');
+}
+
